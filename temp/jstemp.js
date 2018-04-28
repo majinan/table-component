@@ -24,12 +24,13 @@ class Table {
    * 把数据渲染成页面中的表格
    *
    * @param container - 表格容器
-   * @param data - 表格数据 [[1,2,3], [4,5,6]]
+   * @param data - 表格数据
    * @private
    */
   _render (container, data) {
     const tableDom = document.createElement('table')
     tableDom.className = 'xx-table'
+    tableDom.onclick = this._onClickTable.bind(this)
     data.forEach(row => {
       const tr = document.createElement('tr')
       row.forEach(col => {
@@ -40,21 +41,54 @@ class Table {
       tableDom.appendChild(tr)
     })
     container.appendChild(tableDom)
+
   }
 
   /**
-   * 获取选中单元格的信息
-   *
-   * @returns {Array} [{row:0, col:1, value:'5'}]
-   * @public
+   * 处理表格上的点击事件
+   * @param e
+   * @private
    */
+  _onClickTable (e) {
+    const borders = this._getBorders()
+    borders.render(e.target)
+  }
+
+  _getBorders () {
+    if (!this.borders) {
+      this.borders = new Borders(this.container)
+    }
+    return this.borders
+  }
+
   getSelectedCells () {
-    return this.selectedCells
+
   }
 }
 
-// 渲染表格
-// TODO 表格中的支持点选单元格；  点击单元格时出现一个蓝色的边框，并且通过 getSelectedCells 方法能获取到选中的单元格信息
-// TODO 支持按键选中
-// TODO 支持框选
-onclick
+class Borders {
+  constructor (contaienr) {
+    const dom = this.dom = document.createElement('div')
+    dom.className = 'xx-table-border'
+    contaienr.appendChild(dom)
+
+    document.onclick = e => {
+      const target = e.target
+      if (target.tagName !== 'TD') {
+        dom.style.display = 'none'
+      }
+    }
+  }
+
+  render (td) {
+    const {clientWidth, clientHeight, offsetTop, offsetLeft} = td
+    const dom = this.dom
+    Object.assign(dom.style, {
+      width: clientWidth - 1 + 'px',
+      height: clientHeight - 1 + 'px',
+      top: offsetTop + 'px',
+      left: offsetLeft + 'px',
+      display: 'block',
+    })
+  }
+}
